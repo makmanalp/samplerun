@@ -1,14 +1,19 @@
 import unittest
 import math
 
+import json
+import os.path
+
 
 class SampleRunMixin:
 
+    @staticmethod
     def percent_difference(self, a, b):
         """Percent difference between two values."""
         return (float(a) - b) / (a + b / 2.0)
 
-    def distance2D(self, a, b):
+    @staticmethod
+    def distance2D(a, b):
         """Distance between two 2d points"""
         return math.sqrt((b[1] - a[1])**2.0 +
                          (b[0] - a[0])**2.0)
@@ -57,3 +62,31 @@ class DetectionLocationtest(SampleRunTestCase):
                           [(2, 2)], [(2, 2), (3, 5)], 10)
         self.assertRaises(AssertionError, self.assert2DPointsWithin,
                           [(2, 2)], [(2, 2), (3, 5)], 10)
+
+
+class TestsContainer(SampleRunTestCase):
+    longMessage = True
+
+    @classmethod
+    def attach_method(cls, name, method):
+        setattr(cls, name, method)
+
+    @classmethod
+    def make_test_function(cls, actual_points, expected_points):
+        def current_test(self):
+            self.assert2DPointsWithin(actual_points, expected_points, 80)
+        return current_test
+
+    @classmethod
+    def add_folder(cls, folder):
+
+        data = json.loads(open(os.path.join(folder, "points.json")).read())
+        only_images = {k: v for k, v in data.iteritems() if k.endswith(".png")}
+
+        for image_name, points in only_images.iteritems():
+            test_name = "test_{0}".format(image_name.replace("-", "_").replace(".", "_"))
+            cls.attach_method(test_name, cls.make_test_function([[1, 2]], points))
+
+if __name__ == "__main__":
+    TestsContainer.add_folder("images/")
+    unittest.main()
