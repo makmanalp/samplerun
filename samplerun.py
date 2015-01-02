@@ -1,5 +1,8 @@
 import unittest
+import pytest
+import sys
 import math
+import os
 
 import json
 import os.path
@@ -64,6 +67,47 @@ class DetectionLocationtest(SampleRunTestCase):
                           [(2, 2)], [(2, 2), (3, 5)], 10)
 
 
+def load_folders():
+    folders = ["images", "pinkball"]
+    cwd = os.path.abspath(os.path.curdir)
+    return [os.path.join(cwd, f) for f in folders]
+
+
+class Algorithm(object):
+
+    folder = None
+
+    def run(self, image, with_assertions=True):
+        raise NotImplementedError()
+
+
+class MyAlgoA(Algorithm):
+    folder = "images/"
+
+    def run(self, image, **kwargs):
+        pass
+
+
+class MyAlgoB(Algorithm):
+    folder = "pinkball/"
+
+    def run(self, image, **kwargs):
+        pass
+
+ALGORITHMS = [MyAlgoA(), MyAlgoB()]
+
+
+@pytest.fixture(params=load_folders())
+def image_set(request):
+    return request.param
+
+
+@pytest.fixture(params=ALGORITHMS)
+def algorithm(request):
+    return request.param
+
+
+@pytest.mark.usefixtures("image_set")
 class TestsContainer(SampleRunTestCase):
     longMessage = True
 
@@ -87,6 +131,6 @@ class TestsContainer(SampleRunTestCase):
             test_name = "test_{0}".format(image_name.replace("-", "_").replace(".", "_"))
             cls.attach_method(test_name, cls.make_test_function([[1, 2]], points))
 
-if __name__ == "__main__":
-    TestsContainer.add_folder("images/")
-    unittest.main()
+
+def test_algorithms(image_set, algorithm):
+    algorithm.run(image_set, with_assertions=True)
