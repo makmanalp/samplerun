@@ -4,6 +4,8 @@ import sys
 import math
 import os
 
+import skimage.io
+
 import json
 import os.path
 
@@ -67,6 +69,21 @@ class DetectionLocationtest(SampleRunTestCase):
                           [(2, 2)], [(2, 2), (3, 5)], 10)
 
 
+class ImageSet(object):
+
+    def __init__(self, path, extensions=(".png", ".jpg")):
+        self.path = os.path.abspath(path)
+        self.extensions = extensions
+        data = json.loads(open(os.path.join(path, "points.json")).read())
+        self.points = {k: v for k, v in data.iteritems() if k.endswith(extensions)}
+
+    def images(self):
+        for image_name, points in self.points.iteritems():
+            image_path = os.path.join(self.path, image_name)
+            image_array = skimage.io.imread(image_path)
+            yield image_array, points
+
+
 def load_folders():
     folders = ["images", "pinkball"]
     cwd = os.path.abspath(os.path.curdir)
@@ -85,7 +102,8 @@ class MyAlgoA(Algorithm):
     folder = "images/"
 
     def run(self, image, **kwargs):
-        pass
+        for i in image.images():
+            print i
 
 
 class MyAlgoB(Algorithm):
@@ -94,17 +112,20 @@ class MyAlgoB(Algorithm):
     def run(self, image, **kwargs):
         pass
 
-ALGORITHMS = [MyAlgoA(), MyAlgoB()]
+ALGORITHMS = {
+    "AlgoA": MyAlgoA(),
+    "AlgoB": MyAlgoB()
+}
 
 
 @pytest.fixture(params=load_folders())
 def image_set(request):
-    return request.param
+    return ImageSet(request.param)
 
 
-@pytest.fixture(params=ALGORITHMS)
+@pytest.fixture(params=["AlgoA", "AlgoB"])
 def algorithm(request):
-    return request.param
+    return ALGORITHMS.get(request.param)
 
 
 @pytest.mark.usefixtures("image_set")
@@ -120,16 +141,6 @@ class TestsContainer(SampleRunTestCase):
         def current_test(self):
             self.assert2DPointsWithin(actual_points, expected_points, 80)
         return current_test
-
-    @classmethod
-    def add_folder(cls, folder):
-
-        data = json.loads(open(os.path.join(folder, "points.json")).read())
-        only_images = {k: v for k, v in data.iteritems() if k.endswith(".png")}
-
-        for image_name, points in only_images.iteritems():
-            test_name = "test_{0}".format(image_name.replace("-", "_").replace(".", "_"))
-            cls.attach_method(test_name, cls.make_test_function([[1, 2]], points))
 
 
 def test_algorithms(image_set, algorithm):
