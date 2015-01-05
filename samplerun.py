@@ -1,6 +1,5 @@
 import unittest
 import pytest
-import sys
 import math
 import os
 
@@ -89,6 +88,10 @@ def load_folders():
     cwd = os.path.abspath(os.path.curdir)
     return [os.path.join(cwd, f) for f in folders]
 
+@pytest.fixture(params=load_folders())
+def image_set(request):
+    return ImageSet(request.param)
+
 
 class Algorithm(object):
 
@@ -116,11 +119,6 @@ ALGORITHMS = {
     "AlgoA": MyAlgoA(),
     "AlgoB": MyAlgoB()
 }
-
-
-@pytest.fixture(params=load_folders())
-def image_set(request):
-    return ImageSet(request.param)
 
 
 @pytest.fixture(params=["AlgoA", "AlgoB"])
