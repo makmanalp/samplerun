@@ -1,8 +1,6 @@
 import unittest
 import math
 
-import pytest
-
 from image_set import image_set
 from base_algorithm import algorithm
 
@@ -64,21 +62,6 @@ class DetectionLocationtest(SampleRunTestCase):
                           [(2, 2)], [(2, 2), (3, 5)], 10)
         self.assertRaises(AssertionError, self.assert2DPointsWithin,
                           [(2, 2)], [(2, 2), (3, 5)], 10)
-
-
-@pytest.mark.usefixtures("image_set")
-class TestsContainer(SampleRunTestCase):
-    longMessage = True
-
-    @classmethod
-    def attach_method(cls, name, method):
-        setattr(cls, name, method)
-
-    @classmethod
-    def make_test_function(cls, actual_points, expected_points):
-        def current_test(self):
-            self.assert2DPointsWithin(actual_points, expected_points, 80)
-        return current_test
 
 
 def test_algorithms(image_set, algorithm):
