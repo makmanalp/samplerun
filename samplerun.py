@@ -1,8 +1,10 @@
 import unittest
-import pytest
 import math
 
+import pytest
+
 from image_set import image_set
+from base_algorithm import algorithm
 
 
 class SampleRunMixin:
@@ -62,39 +64,6 @@ class DetectionLocationtest(SampleRunTestCase):
                           [(2, 2)], [(2, 2), (3, 5)], 10)
         self.assertRaises(AssertionError, self.assert2DPointsWithin,
                           [(2, 2)], [(2, 2), (3, 5)], 10)
-
-
-class Algorithm(object):
-
-    folder = None
-
-    def run(self, image, with_assertions=True):
-        raise NotImplementedError()
-
-
-class MyAlgoA(Algorithm):
-    folder = "images/"
-
-    def run(self, image, **kwargs):
-        for i in image.images():
-            print i
-
-
-class MyAlgoB(Algorithm):
-    folder = "pinkball/"
-
-    def run(self, image, **kwargs):
-        pass
-
-ALGORITHMS = {
-    "AlgoA": MyAlgoA(),
-    "AlgoB": MyAlgoB()
-}
-
-
-@pytest.fixture(params=["AlgoA", "AlgoB"])
-def algorithm(request):
-    return ALGORITHMS.get(request.param)
 
 
 @pytest.mark.usefixtures("image_set")
