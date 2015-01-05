@@ -21,9 +21,10 @@ class ImageSet(object):
 
 
 def load_folders():
-    folders = ["images", "pinkball"]
     cwd = os.path.abspath(os.path.curdir)
-    return [os.path.join(cwd, f) for f in folders]
+    dataset_dir = os.path.join(cwd, "datasets/")
+    return [os.path.join(dataset_dir, f) for f in os.listdir(dataset_dir)
+            if os.path.isdir(os.path.join(dataset_dir, f))]
 
 
 @pytest.fixture(params=load_folders())
