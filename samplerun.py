@@ -44,11 +44,7 @@ class SampleRunMixin:
             self.assertDistanceWithin(x, y, within)
 
 
-class SampleRunTestCase(unittest.TestCase, SampleRunMixin):
-    pass
-
-
-class DetectionLocationtest(SampleRunTestCase):
+class DetectionLocationtest(unittest.TestCase, SampleRunMixin):
 
     def testWithin(self):
         self.assert2DPointsWithin([(2, 2), (3, 4)], [(2, 2), (3, 5)], 10)
