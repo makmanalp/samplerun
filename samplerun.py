@@ -2,7 +2,7 @@ import unittest
 import math
 
 from image_set import image_set
-from base_algorithm import algorithm
+from algorithm_loader import algorithm
 
 
 class SampleRunMixin:
